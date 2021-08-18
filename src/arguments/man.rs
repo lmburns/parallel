@@ -1,4 +1,4 @@
-pub const MAN_PAGE: &'static str = r#"NAME
+pub const MAN_PAGE: &str = r#"NAME
     parallel - a command-line CPU load balancer, aka a work-stealer, written in Rust
 
 SYNOPSIS

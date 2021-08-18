@@ -191,7 +191,7 @@ fn main() {
                         delay:     args.delay,
                         has_delay: args.delay != Duration::from_millis(0),
                         completed: false,
-                        flags:     flags,
+                        flags,
                     }
                 };
 
@@ -216,19 +216,19 @@ fn main() {
                     delay:     args.delay,
                     has_delay: args.delay != Duration::from_millis(0),
                     completed: false,
-                    flags:     flags,
+                    flags,
                 };
 
                 // The command will be built from the arguments, and inputs will be transferred to the command.
                 let handle: JoinHandle<()> = thread::spawn(move || {
                     let mut exec = execute::ExecCommands {
-                        slot:       slot,
-                        num_inputs: num_inputs,
-                        flags:      flags,
-                        timeout:    timeout,
-                        inputs:     inputs,
-                        output_tx:  output_tx,
-                        arguments:  arguments,
+                        slot,
+                        num_inputs,
+                        flags,
+                        timeout,
+                        inputs,
+                        output_tx,
+                        arguments,
                         tempdir:    base_path,
                     };
                     exec.run();

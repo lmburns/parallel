@@ -51,7 +51,7 @@ impl<IO: Read> ExecInputs<IO> {
                 },
                 Err(why) => {
                     let mut stderr = stderr.lock();
-                    let _ = write!(&mut stderr, "parallel: command error: {}: {}\n", input, why);
+                    let _ = writeln!(&mut stderr, "parallel: command error: {}: {}", input, why);
                     let message = format!("{}: {}: {}\n", job_id, input, why);
                     let _ = self.output_tx.send(State::Error(job_id, message));
                     (Timespec::new(0, 0), Timespec::new(0, 0), -1, 0)
@@ -61,12 +61,12 @@ impl<IO: Read> ExecInputs<IO> {
             if flags & JOBLOG != 0 {
                 let runtime = end_time - start_time;
                 let _ = self.output_tx.send(State::JobLog(JobLog {
-                    job_id:     job_id,
-                    start_time: start_time,
+                    job_id,
+                    start_time,
                     runtime:    runtime.num_nanoseconds().unwrap_or(0) as u64,
-                    exit_value: exit_value,
-                    signal:     signal,
-                    flags:      flags,
+                    exit_value,
+                    signal,
+                    flags,
                     command:    input.clone(),
                 }));
             }

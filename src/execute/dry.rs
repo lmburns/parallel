@@ -23,7 +23,7 @@ pub fn dry_run<IO: Read>(flags: u16, inputs: InputIterator<IO>, arguments: &[Tok
 
     // If `SHELL_QUOTE` is enabled then the quoted command will be printed, otherwise the command will be
     // printed unmodified. The correct function to execute will be assigned here in advance.
-    let pipe_action: Box<Fn(&mut StdoutLock, &str)> = if flags & arguments::SHELL_QUOTE != 0 {
+    let pipe_action: Box<dyn Fn(&mut StdoutLock, &str)> = if flags & arguments::SHELL_QUOTE != 0 {
         Box::new(|stdout: &mut StdoutLock, input: &str| {
             if let Some(new_arg) = shell_quote(input) {
                 let _ = stdout.write(new_arg.as_bytes());
@@ -44,10 +44,10 @@ pub fn dry_run<IO: Read>(flags: u16, inputs: InputIterator<IO>, arguments: &[Tok
                 let command = command::ParallelCommand {
                     slot_no:          slot,
                     job_no:           &id_buffer[start_indice..],
-                    job_total:        job_total,
+                    job_total,
                     input:            &input,
                     command_template: arguments,
-                    flags:            flags,
+                    flags,
                 };
 
                 command.build_arguments(&mut command_buffer);
@@ -61,7 +61,7 @@ pub fn dry_run<IO: Read>(flags: u16, inputs: InputIterator<IO>, arguments: &[Tok
             Err(why) => {
                 match why {
                     InputIteratorErr::FileRead(path, why) => {
-                        let _ = write!(stderr, "parallel: input file read error: {:?}: {}\n", path, why);
+                        let _ = writeln!(stderr, "parallel: input file read error: {:?}: {}", path, why);
                     },
                 }
             }

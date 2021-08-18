@@ -19,7 +19,7 @@ pub struct InputsLock<IO: Read> {
 impl<IO: Read> InputsLock<IO> {
     /// Attempts to obtain the next input in the queue, returning `None` when it is finished.
     /// It works the same as the `Iterator` trait's `next()` method, only re-using the same input buffer.
-    pub fn try_next(&mut self, input: &mut String) -> Option<(usize)> {
+    pub fn try_next(&mut self, input: &mut String) -> Option<usize> {
         let mut inputs = self.inputs.lock().unwrap();
         let job_id = inputs.curr_argument;
         if self.flags & arguments::ETA != 0 {
@@ -50,7 +50,7 @@ impl<IO: Read> InputsLock<IO> {
                 let stderr = &mut stderr.lock();
                 match why {
                     InputIteratorErr::FileRead(path, why) => {
-                        let _ = write!(stderr, "parallel: input file read error: {:?}: {}\n", path, why);
+                        let _ = writeln!(stderr, "parallel: input file read error: {:?}: {}", path, why);
                     },
                 }
                 None

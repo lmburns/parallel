@@ -34,7 +34,7 @@ impl<IO: Read> DiskBufferReader<IO> {
         DiskBufferReader {
             data:     [b'\0'; BUFFER_SIZE],
             capacity: 0,
-            file:     file,
+            file,
             path:     path.as_ref().to_owned(),
         }
     }

@@ -294,7 +294,7 @@ pub fn receive_messages (
 
 /// Drops states that have been processed and are no longer required
 fn drop_used_states(buffer: &mut SmallVec<[State; 32]>, drop: &mut SmallVec<[usize; 32]>) {
-    drop.sort();
+    drop.sort_unstable();
     for id in drop.drain().rev() {
         let _ = buffer.remove(id);
     }
@@ -302,7 +302,7 @@ fn drop_used_states(buffer: &mut SmallVec<[State; 32]>, drop: &mut SmallVec<[usi
 
 /// Drops job logs that have been processed and are no longer required
 fn drop_used_logs(buffer: &mut SmallVec<[JobLog; 32]>, drop: &mut SmallVec<[usize; 32]>) {
-    drop.sort();
+    drop.sort_unstable();
     for id in drop.drain().rev() {
         let _ = buffer.remove(id);
     }

@@ -54,7 +54,7 @@ struct Number {
 
 impl Number {
     fn new(id: usize, token: Token) -> Number {
-        Number{ id: id, token: token }
+        Number{ id, token }
     }
 
     fn into_argument(self, path: &Path) -> Result<String, TokenErr> {

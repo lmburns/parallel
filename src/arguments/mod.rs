@@ -327,7 +327,7 @@ fn check_command(input: &str) -> Result<(), ParseErr> {
 fn quote_command(input: &str) -> String {
     let mut output = Vec::with_capacity(input.len());
     let mut bytes = input.bytes();
-    while let Some(byte) = bytes.next() {
+    for byte in &mut bytes {
         output.push(byte);
         if byte == b' ' { break }
     }
@@ -375,7 +375,7 @@ fn write_stdin_to_disk(max_args: usize, mut unprocessed_path: PathBuf, inputs_ar
     let mut number_of_arguments = 0;
 
     // If inputs are commands, then inputs should be command escaped, else inputs escaped.
-    let parse_line: Box<Fn(io::Result<String>) -> io::Result<String>> =
+    let parse_line: Box<dyn Fn(io::Result<String>) -> io::Result<String>> =
         if inputs_are_commands && quote_enabled
     {
         Box::new(|input: io::Result<String>| -> io::Result<String> {
@@ -550,7 +550,7 @@ fn write_inputs_to_disk(lists: Vec<Vec<String>>, current_inputs: Vec<String>, ma
 fn parse_inputs(arguments: &[String], mut index: usize, current_inputs: &mut Vec<String>,
     lists: &mut Vec<Vec<String>>, mode: &mut Mode, inputs_are_commands: bool) -> Result<(), ParseErr>
 {
-    let mut append_list = &mut Vec::new();
+    let append_list = &mut Vec::new();
 
     macro_rules! switch_mode {
         ($mode:expr) => {{
@@ -587,8 +587,8 @@ fn parse_inputs(arguments: &[String], mut index: usize, current_inputs: &mut Vec
             "::::+" => switch_mode!(append Mode::FilesAppend),
             // All other arguments will be added to the current list.
             _ => match *mode {
-                Mode::Inputs if inputs_are_commands       => current_inputs.push(quote_command(&argument)),
-                Mode::InputsAppend if inputs_are_commands => append_list.push(quote_command(&argument)),
+                Mode::Inputs if inputs_are_commands       => current_inputs.push(quote_command(argument)),
+                Mode::InputsAppend if inputs_are_commands => append_list.push(quote_command(argument)),
                 Mode::Inputs       => current_inputs.push(argument.clone()),
                 Mode::InputsAppend => append_list.push(argument.clone()),
                 Mode::Files        => file_parse(current_inputs, argument, inputs_are_commands)?,
@@ -674,7 +674,7 @@ fn file_parse<P: AsRef<Path>>(inputs: &mut Vec<String>, path: P, inputs_are_comm
     let file = fs::File::open(path).map_err(|err| ParseErr::File(FileErr::Open(path.to_owned(), err)))?;
     for line in BufReader::new(file).lines() {
         if let Ok(line) = line {
-            if !line.is_empty() && !line.starts_with("#") {
+            if !line.is_empty() && !line.starts_with('#') {
                 if inputs_are_commands {
                     inputs.push(quote_command(&line));
                 } else {

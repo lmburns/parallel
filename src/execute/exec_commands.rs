@@ -33,7 +33,7 @@ impl<IO: Read> ExecCommands<IO> {
         let stderr = io::stderr();
 
         let slot               = &self.slot.to_string();
-        let mut command_buffer = &mut String::with_capacity(64);
+        let command_buffer = &mut String::with_capacity(64);
         let has_timeout        = self.timeout != Duration::from_millis(0);
         let mut input          = String::with_capacity(64);
         let mut id_buffer      = [0u8; 20];
@@ -52,7 +52,7 @@ impl<IO: Read> ExecCommands<IO> {
             let command = command::ParallelCommand {
                 slot_no:          slot,
                 job_no:           &id_buffer[start_indice..],
-                job_total:        job_total,
+                job_total,
                 input:            &input,
                 command_template: self.arguments,
                 flags:            self.flags
@@ -81,11 +81,11 @@ impl<IO: Read> ExecCommands<IO> {
             if self.flags & JOBLOG != 0 {
                 let runtime: time::Duration = end_time - start_time;
                 let _ = self.output_tx.send(State::JobLog(JobLog {
-                    job_id:     job_id,
-                    start_time: start_time,
+                    job_id,
+                    start_time,
                     runtime:    runtime.num_nanoseconds().unwrap_or(0) as u64,
-                    exit_value: exit_value,
-                    signal:     signal,
+                    exit_value,
+                    signal,
                     flags:      self.flags,
                     command:    command_buffer.clone(),
                 }));

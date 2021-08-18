@@ -77,7 +77,7 @@ impl ParseErr {
                 let _ = writeln!(stderr, "{}", file_err);
             }
             ParseErr::DelayNaN(index) => {
-                let _ = write!(stderr, "delay parameter, '{}', is not a number.\n", arguments[index]);
+                let _ = writeln!(stderr, "delay parameter, '{}', is not a number.", arguments[index]);
             },
             ParseErr::DelayNoValue => {
                 let _ = stderr.write(b"no delay parameter was defined.\n");
@@ -86,13 +86,13 @@ impl ParseErr {
                 let _ = stderr.write(b"no joblog parameter was defined.\n");
             },
             ParseErr::JobsNaN(value) => {
-                let _ = write!(stderr, "jobs parameter, '{}', is not a number.\n", value);
+                let _ = writeln!(stderr, "jobs parameter, '{}', is not a number.", value);
             },
             ParseErr::JobsNoValue => {
                 let _ = stderr.write(b"no jobs parameter was defined.\n");
             },
             ParseErr::MaxArgsNaN(index) => {
-                let _ = write!(stderr, "groups parameter, '{}', is not a number.\n", arguments[index]);
+                let _ = writeln!(stderr, "groups parameter, '{}', is not a number.", arguments[index]);
             },
             ParseErr::MaxArgsNoValue => {
                 let _ = stderr.write(b"no groups parameter was defined.\n");
@@ -101,22 +101,22 @@ impl ParseErr {
                 let _ = stderr.write(b"no memory parameter was defined.\n");
             },
             ParseErr::MemInvalid(index) => {
-                let _ = write!(stderr, "invalid memory value: {}\n", arguments[index]);
+                let _ = writeln!(stderr, "invalid memory value: {}", arguments[index]);
             }
             ParseErr::InvalidArgument(index) => {
-                let _ = write!(stderr, "invalid argument: {}\n", arguments[index]);
+                let _ = writeln!(stderr, "invalid argument: {}", arguments[index]);
             },
             ParseErr::NoArguments => {
-                let _ = write!(stderr, "no input arguments were given.\n");
+                let _ = writeln!(stderr, "no input arguments were given.");
             },
             ParseErr::NonTerminated(command) => {
                 let _ = write!(stderr, "command is not properly terminated:\n  $ {}\nTip: Try using the --quote parameter to escape your command\n", command);
             },
             ParseErr::RedirFile(path) => {
-                let _ = write!(stderr, "an error occurred while redirecting file: {:?}\n", path);
+                let _ = writeln!(stderr, "an error occurred while redirecting file: {:?}", path);
             },
             ParseErr::TimeoutNaN(index) => {
-                let _ = write!(stderr, "invalid timeout value: {}\n", arguments[index]);
+                let _ = writeln!(stderr, "invalid timeout value: {}", arguments[index]);
             },
             ParseErr::TimeoutNoValue => {
                 let _ = stderr.write(b"no timeout parameter was defined.\n");

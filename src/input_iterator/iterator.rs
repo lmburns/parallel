@@ -4,7 +4,7 @@ use super::InputIteratorErr;
 use itoa;
 use time;
 use std::io::{self, Write, Read};
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::str;
 
 pub struct ETA {
@@ -64,7 +64,7 @@ impl<IO: Read> InputIterator<IO> {
             total_arguments: args,
             curr_argument:   0,
             completed:       0,
-            input_buffer:    input_buffer,
+            input_buffer,
             start_time:      time::precise_time_ns(),
             average_time:    0,
         })
@@ -74,7 +74,7 @@ impl<IO: Read> InputIterator<IO> {
         // Read the next set of arguments from the unprocessed file, but only read as many bytes
         // as the buffer can hold without overwriting the unused bytes that was shifted to the left.
         self.input_buffer.disk_buffer.buffer(self.input_buffer.capacity).map_err(|why| {
-            InputIteratorErr::FileRead(PathBuf::from(self.input_buffer.disk_buffer.path.clone()), why)
+            InputIteratorErr::FileRead(self.input_buffer.disk_buffer.path.clone(), why)
         })?;
         let bytes_read = self.input_buffer.disk_buffer.capacity;
 
@@ -88,7 +88,7 @@ impl<IO: Read> InputIterator<IO> {
     pub fn eta(&self) -> ETA {
         let left = self.total_arguments as u64 - self.completed as u64;
         ETA {
-            left: left,
+            left,
             time: left * self.average_time,
             average: self.average_time
         }
@@ -228,7 +228,7 @@ mod tests {
         let iterator = InputIterator::new(Path::new("tests/buffer.dat"), file, 4096).unwrap();
         assert_eq!(0, iterator.input_buffer.start);
         assert_eq!(1859, iterator.input_buffer.end);
-        for (actual, expected) in iterator.zip((1..4096)) {
+        for (actual, expected) in iterator.zip(1..4096) {
             assert_eq!(actual.unwrap(), expected.to_string());
         }
     }

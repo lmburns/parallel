@@ -38,7 +38,7 @@ pub mod disk {
                 }
             }
         } else {
-            let mut stdout = child.stdout.as_mut().expect("unable to open stdout of child");
+            let stdout = child.stdout.as_mut().expect("unable to open stdout of child");
 
             // Attempt to read from stdout and stderr simultaneously until both are exhausted of messages.
             loop {
