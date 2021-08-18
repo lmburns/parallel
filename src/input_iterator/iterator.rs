@@ -1,12 +1,15 @@
-use disk_buffer::*;
-use arguments::errors::{FileErr};
 use super::InputIteratorErr;
+use arguments::errors::FileErr;
+use disk_buffer::*;
 use itoa;
+use std::{
+    io::{self, Read, Write},
+    path::Path,
+    str,
+};
 use time;
-use std::io::{self, Write, Read};
-use std::path::{Path};
-use std::str;
 
+#[allow(clippy::upper_case_acronyms)]
 pub struct ETA {
     pub left:    u64,
     pub time:    u64,
@@ -26,13 +29,16 @@ impl ETA {
         let _ = stderr.write(b"s Left: ");
         let _ = itoa::write(&mut stderr, self.left);
 
-        // Write the average runtime of processes (with two decimal places) to standard error
+        // Write the average runtime of processes (with two decimal places) to standard
+        // error
         let _ = stderr.write(b" AVG: ");
         let _ = itoa::write(&mut stderr, self.average / 1_000_000_000);
         let _ = stderr.write(b".");
         let remainder = (self.average % 1_000_000_000) / 10_000_000;
         let _ = itoa::write(&mut stderr, remainder);
-        if remainder < 10 { let _ = stderr.write(b"0"); }
+        if remainder < 10 {
+            let _ = stderr.write(b"0");
+        }
 
         // Write the number of completed units so far to standard error
         let _ = stderr.write(b"s Completed: ");
@@ -41,9 +47,9 @@ impl ETA {
     }
 }
 
-/// The `InputIterator` tracks the total number of arguments, the current argument counter, and
-/// takes ownership of an `InputBuffer` which buffers input arguments from the disk when arguments
-/// stored in memory are depleted.
+/// The `InputIterator` tracks the total number of arguments, the current
+/// argument counter, and takes ownership of an `InputBuffer` which buffers
+/// input arguments from the disk when arguments stored in memory are depleted.
 pub struct InputIterator<IO: Read> {
     pub total_arguments: usize,
     pub curr_argument:   usize,
@@ -62,20 +68,24 @@ impl<IO: Read> InputIterator<IO> {
 
         Ok(InputIterator {
             total_arguments: args,
-            curr_argument:   0,
-            completed:       0,
+            curr_argument: 0,
+            completed: 0,
             input_buffer,
-            start_time:      time::precise_time_ns(),
-            average_time:    0,
+            start_time: time::precise_time_ns(),
+            average_time: 0,
         })
     }
 
     fn buffer(&mut self) -> Result<(), InputIteratorErr> {
-        // Read the next set of arguments from the unprocessed file, but only read as many bytes
-        // as the buffer can hold without overwriting the unused bytes that was shifted to the left.
-        self.input_buffer.disk_buffer.buffer(self.input_buffer.capacity).map_err(|why| {
-            InputIteratorErr::FileRead(self.input_buffer.disk_buffer.path.clone(), why)
-        })?;
+        // Read the next set of arguments from the unprocessed file, but only read as
+        // many bytes as the buffer can hold without overwriting the unused
+        // bytes that was shifted to the left.
+        self.input_buffer
+            .disk_buffer
+            .buffer(self.input_buffer.capacity)
+            .map_err(|why| {
+                InputIteratorErr::FileRead(self.input_buffer.disk_buffer.path.clone(), why)
+            })?;
         let bytes_read = self.input_buffer.disk_buffer.capacity;
 
         // Update the recorded number of arguments and indices.
@@ -90,21 +100,24 @@ impl<IO: Read> InputIterator<IO> {
         ETA {
             left,
             time: left * self.average_time,
-            average: self.average_time
+            average: self.average_time,
         }
     }
 
     pub fn next_value(&mut self, buffer: &mut String) -> Option<Result<(), InputIteratorErr>> {
         if self.curr_argument == self.total_arguments {
             // If all arguments have been depleted, return `None`.
-            return None
+            return None;
         } else if self.curr_argument == self.input_buffer.end {
             // If the next argument is not stored in the internal buffer, update the buffer.
-            if let Err(err) = self.buffer() { return Some(Err(err)); }
+            if let Err(err) = self.buffer() {
+                return Some(Err(err));
+            }
         }
 
-        // Obtain the start and end indices to know where to find the input in the array.
-        let end   = self.input_buffer.indices[self.input_buffer.index + 1];
+        // Obtain the start and end indices to know where to find the input in the
+        // array.
+        let end = self.input_buffer.indices[self.input_buffer.index + 1];
         let start = if self.input_buffer.index == 0 {
             self.input_buffer.indices[self.input_buffer.index]
         } else {
@@ -115,35 +128,45 @@ impl<IO: Read> InputIterator<IO> {
         match self.completed {
             0 => (),
             1 => self.average_time = time::precise_time_ns() - self.start_time,
-            _ => self.average_time = (time::precise_time_ns() - self.start_time) / self.completed as u64,
+            _ =>
+                self.average_time =
+                    (time::precise_time_ns() - self.start_time) / self.completed as u64,
         }
 
         // Increment the iterator's state.
-        self.curr_argument      += 1;
+        self.curr_argument += 1;
         self.input_buffer.index += 1;
 
         // Copy the input from the buffer into a `String` and return it
         buffer.truncate(0);
-        unsafe { buffer.push_str(str::from_utf8_unchecked(&self.input_buffer.disk_buffer.data[start..end])); }
+        unsafe {
+            buffer.push_str(str::from_utf8_unchecked(
+                &self.input_buffer.disk_buffer.data[start..end],
+            ));
+        }
         Some(Ok(()))
     }
 }
 
-// Implement the `Iterator` trait for `InputIterator` to gain access to all the `Iterator` methods for free.
+// Implement the `Iterator` trait for `InputIterator` to gain access to all the
+// `Iterator` methods for free.
 impl<IO: Read> Iterator for InputIterator<IO> {
     type Item = Result<String, InputIteratorErr>;
 
     fn next(&mut self) -> Option<Result<String, InputIteratorErr>> {
         if self.curr_argument == self.total_arguments {
             // If all arguments have been depleted, return `None`.
-            return None
+            return None;
         } else if self.curr_argument == self.input_buffer.end {
             // If the next argument is not stored in the internal buffer, update the buffer.
-            if let Err(err) = self.buffer() { return Some(Err(err)); }
+            if let Err(err) = self.buffer() {
+                return Some(Err(err));
+            }
         }
 
-        // Obtain the start and end indices to know where to find the input in the array.
-        let end   = self.input_buffer.indices[self.input_buffer.index + 1];
+        // Obtain the start and end indices to know where to find the input in the
+        // array.
+        let end = self.input_buffer.indices[self.input_buffer.index + 1];
         let start = if self.input_buffer.index == 0 {
             self.input_buffer.indices[self.input_buffer.index]
         } else {
@@ -154,21 +177,27 @@ impl<IO: Read> Iterator for InputIterator<IO> {
         match self.completed {
             0 => (),
             1 => self.average_time = time::precise_time_ns() - self.start_time,
-            _ => self.average_time = (time::precise_time_ns() - self.start_time) / self.completed as u64,
+            _ =>
+                self.average_time =
+                    (time::precise_time_ns() - self.start_time) / self.completed as u64,
         }
 
         // Increment the iterator's state.
-        self.curr_argument       += 1;
-        self.input_buffer.index  += 1;
+        self.curr_argument += 1;
+        self.input_buffer.index += 1;
 
         // Copy the input from the buffer into a `String` and return it
-        Some(Ok(String::from_utf8_lossy(&self.input_buffer.disk_buffer.data[start..end]).into_owned()))
+        Some(Ok(String::from_utf8_lossy(
+            &self.input_buffer.disk_buffer.data[start..end],
+        )
+        .into_owned()))
     }
 }
 
-/// Higher level buffer implementation which keeps track of how many inputs are currently
-/// stored in the buffer, where all of the indices of the input delimiters are, and which
-/// segment of the complete set of arguments are currently buffered.
+/// Higher level buffer implementation which keeps track of how many inputs are
+/// currently stored in the buffer, where all of the indices of the input
+/// delimiters are, and which segment of the complete set of arguments are
+/// currently buffered.
 struct InputBuffer<IO: Read> {
     index:       usize,
     start:       usize,
@@ -179,10 +208,13 @@ struct InputBuffer<IO: Read> {
 }
 
 impl<IO: Read> InputBuffer<IO> {
-    /// Takes ownership of a `DiskBufferReader` and transforms it into a higher level
-    /// `InputBuffer` which will track additional information about the disk buffer.
+    /// Takes ownership of a `DiskBufferReader` and transforms it into a higher
+    /// level `InputBuffer` which will track additional information about
+    /// the disk buffer.
     fn new(mut unprocessed: DiskBufferReader<IO>) -> Result<InputBuffer<IO>, FileErr> {
-        unprocessed.buffer(0).map_err(|why| FileErr::Read(unprocessed.path.clone(), why))?;
+        unprocessed
+            .buffer(0)
+            .map_err(|why| FileErr::Read(unprocessed.path.clone(), why))?;
         let bytes_read = unprocessed.capacity;
 
         let mut temp = InputBuffer {
@@ -191,23 +223,29 @@ impl<IO: Read> InputBuffer<IO> {
             end:         0,
             capacity:    0,
             disk_buffer: unprocessed,
-            indices:     [0usize; BUFFER_SIZE / 2]
+            indices:     [0usize; BUFFER_SIZE / 2],
         };
 
         count_arguments(&mut temp, bytes_read);
         Ok(temp)
     }
-
-
 }
 
-/// Counts the number of arguments that are stored in the buffer, marking the location of
-/// the indices and the actual capacity of the buffer's useful information.
+/// Counts the number of arguments that are stored in the buffer, marking the
+/// location of the indices and the actual capacity of the buffer's useful
+/// information.
 fn count_arguments<IO: Read>(buffer: &mut InputBuffer<IO>, bytes_read: usize) {
     let mut newlines = 1;
-    buffer.capacity  = 0;
+    buffer.capacity = 0;
 
-    for (indice, _) in buffer.disk_buffer.data.iter().take(bytes_read).enumerate().filter(|&(_, byte)| *byte == b'\n') {
+    for (indice, _) in buffer
+        .disk_buffer
+        .data
+        .iter()
+        .take(bytes_read)
+        .enumerate()
+        .filter(|&(_, byte)| *byte == b'\n')
+    {
         buffer.indices[newlines] = indice;
         newlines += 1;
     }

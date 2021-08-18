@@ -4,13 +4,12 @@ mod dry;
 mod exec_commands;
 mod exec_inputs;
 mod job_log;
-mod signals;
 mod receive;
+mod signals;
 
 pub mod command;
 pub mod pipe;
 
-pub use self::dry::dry_run;
-pub use self::exec_commands::ExecCommands;
-pub use self::exec_inputs::ExecInputs;
-pub use self::receive::receive_messages;
+pub use self::{
+    dry::dry_run, exec_commands::ExecCommands, exec_inputs::ExecInputs, receive::receive_messages,
+};

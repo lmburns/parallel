@@ -1,7 +1,7 @@
 comment_width                = 80
 edition                      = "2018"
 error_on_line_overflow       = true
-error_on_unformatted         = true
+error_on_unformatted         = false
 format_code_in_doc_comments  = true
 format_macro_bodies          = true
 format_macro_matchers        = true   # $a: ident -> $a:ident
@@ -20,6 +20,6 @@ unstable_features            = true
 use_field_init_shorthand     = true
 use_try_shorthand            = true
 wrap_comments                = true
-color                        = "always"
+color                        = "Always"
 
 combine_control_expr         = true # foo!(if x {...

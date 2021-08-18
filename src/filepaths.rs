@@ -27,7 +27,13 @@ pub fn new_job(base: &str, id: usize, buffer: &mut [u8]) -> (usize, String, Stri
     (truncate_value, stdout, stderr)
 }
 
-pub fn next_job_path(id: usize, truncate: usize, buffer: &mut [u8], stdout: &mut String, stderr: &mut String) {
+pub fn next_job_path(
+    id: usize,
+    truncate: usize,
+    buffer: &mut [u8],
+    stdout: &mut String,
+    stderr: &mut String,
+) {
     stdout.truncate(truncate);
     stderr.truncate(truncate);
     let start_indice = id.numtoa(10, buffer);

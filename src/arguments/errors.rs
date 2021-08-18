@@ -1,7 +1,9 @@
-use std::fmt;
-use std::io::{self, Write, stderr, stdout};
-use std::path::PathBuf;
-use std::process::exit;
+use std::{
+    fmt,
+    io::{self, stderr, stdout, Write},
+    path::PathBuf,
+    process::exit,
+};
 
 /// A list of all the possible errors that may happen when working with files.
 #[derive(Debug)]
@@ -14,9 +16,9 @@ pub enum FileErr {
 impl fmt::Display for FileErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            FileErr::Open(ref path, ref io)  => write!(f, "unable to open {:?}: {}", path, io),
-            FileErr::Read(ref path, ref io)  => write!(f, "unable to read {:?}: {}", path, io),
-            FileErr::Write(ref path, ref io) => write!(f, "unable to write {:?}: {}", path, io)
+            FileErr::Open(ref path, ref io) => write!(f, "unable to open {:?}: {}", path, io),
+            FileErr::Read(ref path, ref io) => write!(f, "unable to read {:?}: {}", path, io),
+            FileErr::Write(ref path, ref io) => write!(f, "unable to write {:?}: {}", path, io),
         }
     }
 }
@@ -61,7 +63,9 @@ pub enum ParseErr {
 }
 
 impl From<FileErr> for ParseErr {
-    fn from(input: FileErr) -> ParseErr { ParseErr::File(input) }
+    fn from(input: FileErr) -> ParseErr {
+        ParseErr::File(input)
+    }
 }
 
 impl ParseErr {
@@ -75,9 +79,13 @@ impl ParseErr {
         match self {
             ParseErr::File(file_err) => {
                 let _ = writeln!(stderr, "{}", file_err);
-            }
+            },
             ParseErr::DelayNaN(index) => {
-                let _ = writeln!(stderr, "delay parameter, '{}', is not a number.", arguments[index]);
+                let _ = writeln!(
+                    stderr,
+                    "delay parameter, '{}', is not a number.",
+                    arguments[index]
+                );
             },
             ParseErr::DelayNoValue => {
                 let _ = stderr.write(b"no delay parameter was defined.\n");
@@ -92,7 +100,11 @@ impl ParseErr {
                 let _ = stderr.write(b"no jobs parameter was defined.\n");
             },
             ParseErr::MaxArgsNaN(index) => {
-                let _ = writeln!(stderr, "groups parameter, '{}', is not a number.", arguments[index]);
+                let _ = writeln!(
+                    stderr,
+                    "groups parameter, '{}', is not a number.",
+                    arguments[index]
+                );
             },
             ParseErr::MaxArgsNoValue => {
                 let _ = stderr.write(b"no groups parameter was defined.\n");
@@ -102,7 +114,7 @@ impl ParseErr {
             },
             ParseErr::MemInvalid(index) => {
                 let _ = writeln!(stderr, "invalid memory value: {}", arguments[index]);
-            }
+            },
             ParseErr::InvalidArgument(index) => {
                 let _ = writeln!(stderr, "invalid argument: {}", arguments[index]);
             },
@@ -110,10 +122,19 @@ impl ParseErr {
                 let _ = writeln!(stderr, "no input arguments were given.");
             },
             ParseErr::NonTerminated(command) => {
-                let _ = write!(stderr, "command is not properly terminated:\n  $ {}\nTip: Try using the --quote parameter to escape your command\n", command);
+                let _ = write!(
+                    stderr,
+                    "command is not properly terminated:\n  $ {}\nTip: Try using the --quote \
+                     parameter to escape your command\n",
+                    command
+                );
             },
             ParseErr::RedirFile(path) => {
-                let _ = writeln!(stderr, "an error occurred while redirecting file: {:?}", path);
+                let _ = writeln!(
+                    stderr,
+                    "an error occurred while redirecting file: {:?}",
+                    path
+                );
             },
             ParseErr::TimeoutNaN(index) => {
                 let _ = writeln!(stderr, "invalid timeout value: {}", arguments[index]);
@@ -123,7 +144,7 @@ impl ParseErr {
             },
             ParseErr::WorkDirNoValue => {
                 let _ = stderr.write(b"no workdir parameter was defined.\n");
-            }
+            },
         };
         let _ = stdout.write(b"For help on command-line usage, execute `parallel -h`\n");
         exit(1);

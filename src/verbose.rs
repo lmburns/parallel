@@ -1,5 +1,5 @@
-use std::io::{Stdout, Write};
 use itoa;
+use std::io::{Stdout, Write};
 
 pub fn total_inputs(stdout: &Stdout, threads: usize, inputs: usize) {
     let mut stdout = stdout.lock();

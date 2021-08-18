@@ -1,6 +1,8 @@
-/// A trait that adds the ability for numbers to find their digit count and to convert them to padded strings.
+/// A trait that adds the ability for numbers to find their digit count and to
+/// convert them to padded strings.
 pub trait Digits {
-    /// Counts the number of digits in a number. **Example:** {{0 = 0}, {1 = 1}, {10 = 2}, {100 = 3}}
+    /// Counts the number of digits in a number. **Example:** {{0 = 0}, {1 = 1},
+    /// {10 = 2}, {100 = 3}}
     fn digits(&self) -> Self;
 }
 
@@ -17,7 +19,7 @@ macro_rules! impl_digits_for {
                 digits
             }
         }
-    }
+    };
 }
 
 impl_digits_for!(isize);
