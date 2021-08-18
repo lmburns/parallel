@@ -250,11 +250,9 @@ fn main() {
             if file.metadata().ok().map_or(0, |metadata| metadata.len()) > 0 {
                 let stderr = &mut stderr.lock();
                 let _ = stderr.write(b"parallel: encountered errors during processing:\n");
-                for line in BufReader::new(file).lines() {
-                    if let Ok(line) = line {
-                        let _ = stderr.write(line.as_bytes());
-                        let _ = stderr.write(b"\n");
-                    }
+                for line in BufReader::new(file).lines().flatten() {
+                    stderr.write_all(line.as_bytes()).expect("Unable to write");
+                    stderr.write_all(b"\n").expect("Unable to write");
                 }
                 exit(errors);
             }
