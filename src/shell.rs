@@ -64,6 +64,24 @@ pub fn dash_exists() -> bool {
     false
 }
 
+/// Returns `true` if the Zsh shell was found within the `PATH` environment
+/// variable.
+pub fn zsh_exists() -> bool {
+    if let Ok(path) = env::var("PATH") {
+        for path in path.split(':') {
+            if let Ok(directory) = fs::read_dir(path) {
+                for entry in directory.flatten() {
+                    let path = entry.path();
+                    if path.is_file() && path.file_name() == Some(OsStr::new("zsh")) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
 /// Returns `true` if the Ion shell was found within the `PATH` environment
 /// variable.
 pub fn ion_exists() -> bool {
@@ -87,6 +105,8 @@ pub fn set_flags(flags: &mut u16, arguments: &[Token]) {
     if required(Kind::Tokens(arguments)) {
         if ion_exists() {
             *flags |= arguments::SHELL_ENABLED + arguments::ION_EXISTS;
+        } else if zsh_exists() {
+            *flags |= arguments::SHELL_ENABLED + arguments::ZSH_EXISTS;
         } else if dash_exists() {
             *flags |= arguments::SHELL_ENABLED + arguments::DASH_EXISTS;
         } else {

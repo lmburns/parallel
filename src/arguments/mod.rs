@@ -46,6 +46,7 @@ pub const ETA: u16 = 256;
 pub const JOBLOG: u16 = 512;
 pub const JOBLOG_8601: u16 = 1024;
 pub const ION_EXISTS: u16 = 2048;
+pub const ZSH_EXISTS: u16 = 32;
 
 /// `Args` is a collection of critical options and arguments that were collected
 /// at startup of the application.
@@ -738,9 +739,14 @@ fn parse_inputs(
             "::::+" => switch_mode!(append Mode::FilesAppend),
             // All other arguments will be added to the current list.
             _ => match *mode {
-                Mode::Inputs if inputs_are_commands => current_inputs.push(quote_command(argument)),
-                Mode::InputsAppend if inputs_are_commands =>
-                    append_list.push(quote_command(argument)),
+                Mode::Inputs if inputs_are_commands => {
+                    log::debug!("Mode::Inputs: inputs are commands");
+                    current_inputs.push(quote_command(argument))
+                },
+                Mode::InputsAppend if inputs_are_commands => {
+                    log::debug!("Mode::InputsAppend: inputs are commands");
+                    append_list.push(quote_command(argument))
+                },
                 Mode::Inputs => current_inputs.push(argument.clone()),
                 Mode::InputsAppend => append_list.push(argument.clone()),
                 Mode::Files => file_parse(current_inputs, argument, inputs_are_commands)?,

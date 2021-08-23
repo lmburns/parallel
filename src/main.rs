@@ -56,6 +56,8 @@ unsafe fn static_arg(args: &[Token]) -> &'static [Token] {
 }
 
 fn main() {
+    // env_logger::init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
     // Obtain a handle to standard output/error's buffers so we can write directly
     // to them.
     let stdout = io::stdout();
@@ -199,8 +201,13 @@ fn main() {
         // The `slot` variable is required by the {%} token.
         if args.flags & arguments::INPUTS_ARE_COMMANDS != 0 {
             if shell::ion_exists() {
+                log::debug!("shell: ion");
                 args.flags |= arguments::ION_EXISTS;
+            } else if shell::zsh_exists() {
+                log::debug!("shell: zsh");
+                args.flags |= arguments::ZSH_EXISTS;
             } else if shell::dash_exists() {
+                log::debug!("shell: dash");
                 args.flags |= arguments::DASH_EXISTS;
             }
 

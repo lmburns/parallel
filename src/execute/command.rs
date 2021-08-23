@@ -178,6 +178,9 @@ fn shell_output<S: AsRef<OsStr>>(args: S, flags: u16) -> io::Result<Child> {
         ("cmd".to_owned(), "/C")
     } else if flags & arguments::ION_EXISTS != 0 {
         ("ion".to_owned(), "-c")
+    } else if flags & arguments::ZSH_EXISTS != 0 {
+        log::debug!("shell_output: zsh");
+        ("zsh".to_owned(), "-c")
     } else if flags & arguments::DASH_EXISTS != 0 {
         ("dash".to_owned(), "-c")
     } else {
